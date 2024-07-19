@@ -46,7 +46,7 @@ class UserDAL:
         user = result.scalars().first()
         if not user:
             raise HTTPException(
-                status_code=401, detail="Пользователя с таким email не существует."
+                status_code=404, detail="Пользователя с таким email не существует."
             )
 
         correct_password = user.verify_password(userpassword)

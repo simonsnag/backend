@@ -7,6 +7,7 @@ from crud.note import (
     get_all_notes_crud,
     get_basket_crud,
     get_note_crud,
+    get_note_from_basket_crud,
     restore_from_basket_crud,
     update_note_crud,
 )
@@ -17,6 +18,7 @@ from utils import check_is_not_deleted, check_user
 
 async def create_note_logic(payload: CreateNoteSchema, user_id: UUID) -> Note:
     note = Note(
+        id="",
         user_id=user_id,
         title=payload.title,
         content=payload.content,
@@ -80,9 +82,16 @@ async def update_note_logic(id: str, note: UpdateNoteSchema, user_id: UUID) -> N
 
 
 async def restore_note_logic(id: str, user_id: UUID) -> Note:
-    current_note = await restore_from_basket_crud(id, user_id)
+    current_note = await get_note_from_basket_crud(id)
+    if not current_note:
+        raise HTTPException(status_code=404, detail="Такой заметки не существует.")
+    if check_user(current_note, user_id) is False:
+        raise HTTPException(
+            status_code=401, detail="Заметка удалена, либо отсутствует доступ."
+        )
+    restored_note = await restore_from_basket_crud(id, user_id)
 
-    return current_note
+    return restored_note
 
 
 async def get_basket_logic(user_id: UUID) -> list:

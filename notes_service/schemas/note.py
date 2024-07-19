@@ -19,6 +19,7 @@ class CreateNoteSchema(BaseSchema):
 
 
 class DisplayNoteSchema(BaseSchema):
+    id: str
     title: str
     content: str
     time_updated: datetime

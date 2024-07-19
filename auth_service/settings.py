@@ -1,7 +1,5 @@
-from dotenv import load_dotenv
+import os
 from pydantic_settings import BaseSettings
-
-load_dotenv()
 
 
 class DataBaseSettings(BaseSettings):
@@ -9,13 +7,13 @@ class DataBaseSettings(BaseSettings):
     def database_url(self):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-    db_host: str
-    db_port: str
-    db_name: str
-    db_user: str
-    db_pass: str
+    db_host: str = os.environ.get("DB_HOST")
+    db_port: str = os.environ.get("DB_PORT")
+    db_name: str = os.environ.get("DB_NAME")
+    db_user: str = os.environ.get("DB_USER")
+    db_pass: str = os.environ.get("DB_PASS")
 
 
 class CryptoSettings(BaseSettings):
-    SECRET_KEY: str
-    ALGORITHM: str
+    SECRET_KEY: str = os.environ.get("SECRET_KEY")
+    ALGORITHM: str = os.environ.get("ALGORITHM")

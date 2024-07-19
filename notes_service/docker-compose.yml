@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongo_db:
+    image: mongo
+    container_name: mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - mongo_vol:/var/lib/mongo/data
+    restart: always
+    networks:
+      - note  
+  app:
+    container_name: note_service
+    image: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      mongo_host: mongo_db
+      mongo_port: 27017
+      mongo_name: note_db
+      mongo_user: mongoadmin
+      mongo_password: secret
+    command: bash -c 'gunicorn --bind 0.0.0.0:8002 main:app --worker-class uvicorn.workers.UvicornWorker --reload'
+    networks:
+      - note
+volumes:
+  mongo_vol:
+    name: mongo_vol
+networks:
+  note:
+    name: note
+    driver: bridge

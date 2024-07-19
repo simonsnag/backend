@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      auth_service_url: http://auth_service:8001
+      notes_service_url: http://note_service:8002
+      file_service_url: http://file_service:8003
+    restart: always
+    command: bash -c 'gunicorn --bind 0.0.0.0:8000 main:app --worker-class uvicorn.workers.UvicornWorker --reload'
+    networks:
+      - auth
+      - note
+      - file
+
+networks:
+  auth:
+    name: auth
+  note:
+    name: note
+  file:
+    name: file

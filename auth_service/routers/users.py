@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from fastapi.security import OAuth2PasswordBearer
 
 from db.dal import UserDAL
 from db.database import get_async_session
-from models.models import User
-from routers.depends import get_current_user, get_token
 from schemas.user import UserAuthSchema, UserCreateSchema, UserReadSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,15 +30,19 @@ async def auth_user(
 
 @user_router.get("/auth", response_model=UserReadSchema)
 async def get_user(
-    user: User = Depends(get_current_user),
+    token: str = Header(...),
     session: AsyncSession = Depends(get_async_session),
 ) -> UserReadSchema:
+    current_user = UserDAL(session)
+    user = await current_user.get_current_user_by_jwt(token)
     return UserReadSchema.model_validate(user)
 
 
-@user_router.post("/token/refresh", response_model=dict)
+@user_router.get("/refresh", response_model=dict)
 async def refresh_token(
-    token: str = Depends(get_token),
+    token: str = Header(...),
     session: AsyncSession = Depends(get_async_session),
-) -> str:
-    return token
+) -> dict:
+    current_user = UserDAL(session)
+    refreshed_token = await current_user.refresh_access_token(token)
+    return refreshed_token

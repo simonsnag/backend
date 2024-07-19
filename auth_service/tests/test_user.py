@@ -55,7 +55,7 @@ async def test_auth_user(api_client, db):
     user_auth = {"email": "sammym@example.com", "password": "samsam"}
 
     response = await api_client.post("/user/auth", json=user_auth)
-    assert response.status_code == 401
+    assert response.status_code == 404
     assert response.json()["detail"] == "Пользователя с таким email не существует."
 
     user_auth = {

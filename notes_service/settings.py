@@ -1,32 +1,20 @@
+import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 load_dotenv()
 
 
-class PostgresSettings(BaseSettings):
-    @property
-    def database_url(self):
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
-
-    db_host: str
-    db_port: str
-    db_name: str
-    db_user: str
-    db_pass: str
-
-
-postgres_settings = PostgresSettings()
-
-
 class MongoSettings(BaseSettings):
     @property
     def database_url(self):
-        return f"mongodb://{self.mongo_host}:{self.mongo_port}/{self.mongo_name}"
+        return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}/?authSource=admin"
 
-    mongo_host: str
-    mongo_port: str
-    mongo_name: str
+    mongo_host: str = os.environ.get("mongo_host")
+    mongo_port: str = os.environ.get("mongo_port")
+    mongo_name: str = os.environ.get("mongo_name")
+    mongo_user: str = os.environ.get("mongo_user")
+    mongo_password: str = os.environ.get("mongo_password")
 
 
 mongo_settings = MongoSettings()

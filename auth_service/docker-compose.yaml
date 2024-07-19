@@ -3,19 +3,47 @@ version: '3'
 services:
   # Сервис базы данных PostgreSQL
   db:
-    image: postgres:13
+    image: postgres:16
+    container_name: postgres_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: user_db
-    ports:
-      - "5432:5432"
+    volumes:
+      - postgres_vol:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
     networks:
-      - notes
+      - auth
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_service
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: user_db 
+      DB_USER: postgres
+      DB_PASS: postgres
+      SECRET_KEY: secret
+      ALGORITHM: HS256
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bash -c 'alembic --config alembic.ini upgrade head && gunicorn --bind 0.0.0.0:8001 main:app --worker-class uvicorn.workers.UvicornWorker --reload'
+    restart: always
+    networks:
+      - auth
 
-
-
+volumes:
+  postgres_vol:
+    name: postgres_vol
 
 networks:
-  notes:
+  auth:
+    name: auth
     driver: bridge

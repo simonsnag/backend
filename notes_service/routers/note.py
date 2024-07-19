@@ -19,7 +19,8 @@ basket_router = APIRouter()
 
 @note_router.post("/create")
 async def create_note(
-    note: CreateNoteSchema = Body(...), user_id: UUID = Depends(get_user)
+    note: CreateNoteSchema,
+    user_id: UUID = Depends(get_user),
 ) -> DisplayNoteSchema:
     created_note = await create_note_logic(note, user_id)
     return DisplayNoteSchema.model_validate(created_note)
@@ -31,8 +32,8 @@ async def get_note(id: str, user_id: UUID = Depends(get_user)) -> DisplayNoteSch
     return DisplayNoteSchema.model_validate(current_note)
 
 
-@note_router.get("/")
-async def get_all_notes(user_id: UUID) -> list:
+@note_router.get("")
+async def get_all_notes(user_id: UUID = Depends(get_user)) -> list:
     return await get_all_notes_logic(user_id)
 
 
@@ -46,10 +47,10 @@ async def update_note(
     id: str, data: UpdateNoteSchema = Body(...), user_id: UUID = Depends(get_user)
 ):
     updated_note = await update_note_logic(id, data, user_id)
-    return DisplayNoteSchema.model_validate(updated_note.model_dump())
+    return DisplayNoteSchema.model_validate(updated_note)
 
 
-@basket_router.get("/")
+@basket_router.get("")
 async def get_basket(user_id: UUID = Depends(get_user)) -> list:
     return await get_basket_logic(user_id)
 
@@ -57,4 +58,4 @@ async def get_basket(user_id: UUID = Depends(get_user)) -> list:
 @basket_router.get("/{id}", response_model=DisplayNoteSchema)
 async def restore_note(id: str, user_id: UUID = Depends(get_user)):
     restored_note = await restore_note_logic(id, user_id)
-    return DisplayNoteSchema.model_validate(restored_note.model_dump())
+    return DisplayNoteSchema.model_validate(restored_note)

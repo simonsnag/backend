@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class Note(BaseModel):
+    id: str
     user_id: UUID
     title: str
     content: str

@@ -72,3 +72,7 @@ async def restore_note(id: str, user_id: UUID = Depends(get_user)):
 async def search_note(query: str, user_id: UUID = Depends(get_user)):
     found_notes = await search_note_logic(str(user_id), query)
     return found_notes
+
+
+""""Найди меня хахахахахаха"""
+""""Commit 1"""

@@ -120,3 +120,19 @@ async def restore_from_basket_logic(note_id: str, user_id: UUID, client: AsyncCl
         return restored_note.json()
     else:
         raise HTTPException(status_code=404, detail=restored_note.json()["detail"])
+
+
+async def search_note_logic(query: str, user_id: UUID, client: AsyncClient):
+    search_url = f"{urls.notes_service_url}/search"
+    try:
+        found_notes = await client.get(
+            search_url, headers={"user-data": str(user_id)}, params={"query": query}
+        )
+    except ReadTimeout:
+        raise HTTPException(
+            status_code=501, detail="Сервер не ответил за отведенное время."
+        )
+    if found_notes.status_code == 200:
+        return found_notes.json()
+    else:
+        raise HTTPException(status_code=404, detail=found_notes.json()["detail"])

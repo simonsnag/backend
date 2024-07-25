@@ -1,6 +1,8 @@
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends
+from settings import logger
 
+from logic.elastic import search_note_logic
 from logic.note import (
     create_note_logic,
     delete_note_logic,
@@ -15,20 +17,23 @@ from schemas.note import CreateNoteSchema, DisplayNoteSchema, UpdateNoteSchema
 
 note_router = APIRouter()
 basket_router = APIRouter()
+search_router = APIRouter()
 
 
-@note_router.post("/create")
+@note_router.post("/create", response_model=DisplayNoteSchema)
 async def create_note(
     note: CreateNoteSchema,
     user_id: UUID = Depends(get_user),
 ) -> DisplayNoteSchema:
     created_note = await create_note_logic(note, user_id)
+    logger.info("Заметка создана.")
     return DisplayNoteSchema.model_validate(created_note)
 
 
-@note_router.get("/{id}", response_model=DisplayNoteSchema)
+@note_router.get("/{id}")
 async def get_note(id: str, user_id: UUID = Depends(get_user)) -> DisplayNoteSchema:
     current_note = await get_note_logic(id, user_id)
+    logger.info("Заметка получена.")
     return DisplayNoteSchema.model_validate(current_note)
 
 
@@ -47,6 +52,7 @@ async def update_note(
     id: str, data: UpdateNoteSchema = Body(...), user_id: UUID = Depends(get_user)
 ):
     updated_note = await update_note_logic(id, data, user_id)
+    logger.info("Заметка обновлена.")
     return DisplayNoteSchema.model_validate(updated_note)
 
 
@@ -58,4 +64,11 @@ async def get_basket(user_id: UUID = Depends(get_user)) -> list:
 @basket_router.get("/{id}", response_model=DisplayNoteSchema)
 async def restore_note(id: str, user_id: UUID = Depends(get_user)):
     restored_note = await restore_note_logic(id, user_id)
+    logger.info("Заметка восстановлена.")
     return DisplayNoteSchema.model_validate(restored_note)
+
+
+@search_router.get("")
+async def search_note(query: str, user_id: UUID = Depends(get_user)):
+    found_notes = await search_note_logic(str(user_id), query)
+    return found_notes

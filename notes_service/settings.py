@@ -1,3 +1,4 @@
+import logging
 import os
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -18,3 +19,19 @@ class MongoSettings(BaseSettings):
 
 
 mongo_settings = MongoSettings()
+
+
+class ESSettings(BaseSettings):
+    es_host: str = os.environ.get("es_host")
+    es_port: int = os.environ.get("es_port")
+
+
+es_settings = ESSettings()
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.WARNING)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)

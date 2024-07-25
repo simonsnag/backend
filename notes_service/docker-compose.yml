@@ -11,7 +11,34 @@ services:
       - mongo_vol:/var/lib/mongo/data
     restart: always
     networks:
-      - note  
+      - note
+  
+  elastic:
+    container_name: elastic
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.6
+    volumes:
+      - es_vol:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+    restart: always
+    networks:
+      - note
+    ports:
+      - "9200:9200" 
+  
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.17.6
+    environment:
+      ELASTICSEARCH_HOSTS: http://elastic:9200
+    depends_on:
+      - elastic
+    restart: always
+    networks:
+      - note
+    ports:
+      - "5601:5601"
+  
   app:
     container_name: note_service
     image: app
@@ -24,12 +51,20 @@ services:
       mongo_name: note_db
       mongo_user: mongoadmin
       mongo_password: secret
+      es_host: elastic
+      es_port: 9200
     command: bash -c 'gunicorn --bind 0.0.0.0:8002 main:app --worker-class uvicorn.workers.UvicornWorker --reload'
     networks:
       - note
+    ports:
+      - "8002:8002"
+
 volumes:
   mongo_vol:
     name: mongo_vol
+  es_vol:
+    name: es_vol
+
 networks:
   note:
     name: note

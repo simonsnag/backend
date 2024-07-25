@@ -11,9 +11,11 @@ from crud.note import (
     restore_from_basket_crud,
     update_note_crud,
 )
+from logic.elastic import add_note_to_es
 from models.note import Note
 from schemas.note import CreateNoteSchema, UpdateNoteSchema
 from utils import check_is_not_deleted, check_user
+from settings import logger
 
 
 async def create_note_logic(payload: CreateNoteSchema, user_id: UUID) -> Note:
@@ -32,6 +34,8 @@ async def create_note_logic(payload: CreateNoteSchema, user_id: UUID) -> Note:
     if not created_note:
         raise HTTPException(status_code=404, detail="Созданная заметка не найдена.")
 
+    await add_note_to_es(created_note)
+    logger.info("Заметка удачно создана и добавлена в ES.")
     return created_note
 
 

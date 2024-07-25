@@ -26,6 +26,7 @@ from logic.note_logic import (
     get_note_logic,
     get_notes_logic,
     restore_from_basket_logic,
+    search_note_logic,
     update_note_logic,
 )
 from routers.depends import get_token
@@ -183,3 +184,14 @@ async def get_list_files(
 ):
     list_files = await get_list_files_logic(note_id, client)
     return list_files
+
+
+@gateway_router.get("/search", tags=["Search"])
+async def search_note(
+    query: str,
+    token: str = Depends(get_token),
+    client: AsyncClient = Depends(get_async_client),
+):
+    user = await get_user_logic(token, client)
+    list_notes = await search_note_logic(query, user.id, client)
+    return list_notes

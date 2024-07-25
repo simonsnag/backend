@@ -77,3 +77,5 @@ async def search_note(query: str, user_id: UUID = Depends(get_user)):
 """"Найди меня хахахахахаха"""
 """"Commit 1"""
 """Commit 2"""
+"""COmmit3"""
+"""Commit 4"""
